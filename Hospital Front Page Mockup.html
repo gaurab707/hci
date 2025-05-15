@@ -1,0 +1,175 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nepal Hospital - Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body.high-contrast {
+            background: #000 !important;
+            color: #fff !important;
+        }
+        body.high-contrast a, body.high-contrast button {
+            background: #fff !important;
+            color: #000 !important;
+            border: 2px solid #fff !important;
+        }
+        body.high-contrast .bg-blue-600 {
+            background: #000 !important;
+            border: 2px solid #fff !important;
+        }
+        [aria-hidden="true"] {
+            display: none;
+        }
+        .large-text {
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <!-- Header -->
+    <header class="sticky top-0 bg-white shadow z-10" role="banner">
+        <nav class="container mx-auto flex items-center justify-between py-4" aria-label="Main navigation">
+            <div class="flex items-center">
+                <img src="https://via.placeholder.com/50" alt="Hospital Logo" class="h-10 mr-4">
+                <h1 class="text-xl font-bold">Nepal Hospital</h1>
+            </div>
+            <ul class="flex space-x-6" role="menubar">
+                <li><a href="#" class="text-gray-700 hover:text-blue-600" role="menuitem">Home</a></li>
+                <li><a href="#" class="text-gray-700 hover:text-blue-600" role="menuitem">Services</a></li>
+                <li><a href="#" class="text-gray-700 hover:text-blue-600" role="menuitem">Doctors</a></li>
+                <li><a href="#" class="text-gray-700 hover:text-blue-600" role="menuitem">Contact</a></li>
+            </ul>
+            <div class="flex items-center space-x-4">
+                <select id="language" class="border rounded p-2" aria-label="Select language">
+                    <option value="en">English</option>
+                    <option value="ne">Nepali</option>
+                    <option value="mai">Maithili</option>
+                    <option value="bho">Bhojpuri</option>
+                </select>
+                <button id="contrastToggle" class="border rounded p-2" aria-label="Toggle high contrast mode">High Contrast</button>
+                <button id="fontSizeToggle" class="border rounded p-2" aria-label="Toggle large text">A+</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="bg-gray-100 py-20" role="region" aria-labelledby="hero-title">
+        <div class="container mx-auto text-center">
+            <h2 id="hero-title" class="text-4xl font-bold mb-4">Welcome to Nepal Hospital</h2>
+            <p class="text-lg mb-6">Your trusted healthcare partner in Nepal. Book your appointment today!</p>
+            <div class="flex justify-center space-x-4">
+                <a href="#" class="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700" role="button" aria-label="Book an appointment">Book Appointment</a>
+                <input type="search" class="border rounded p-3 w-64" placeholder="Search doctors or services" aria-label="Search">
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="py-16" role="region" aria-labelledby="services-title">
+        <div class="container mx-auto">
+            <h3 id="services-title" class="text-3xl font-bold text-center mb-12">Our Services</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded shadow text-center" role="article">
+                    <img src="https://via.placeholder.com/100" alt="Emergency Services Icon" class="mx-auto mb-4">
+                    <h4 class="text-xl font-semibold mb-2">Emergency Services</h4>
+                    <p>24/7 emergency care with expert staff.</p>
+                </div>
+                <div class="bg-white p-6 rounded shadow text-center" role="article">
+                    <img src="https://via.placeholder.com/100" alt="OPD Services Icon" class="mx-auto mb-4">
+                    <h4 class="text-xl font-semibold mb-2">OPD Services</h4>
+                    <p>Outpatient consultations with specialists.</p>
+                </div>
+                <div class="bg-white p-6 rounded shadow text-center" role="article">
+                    <img src="https://via.placeholder.com/100" alt="Lab Services Icon" class="mx-auto mb-4">
+                    <h4 class="text-xl font-semibold mb-2">Lab Services</h4>
+                    <p>Advanced diagnostic and testing facilities.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8" role="contentinfo">
+        <div class="container mx-auto text-center">
+            <p>Contact: +977-1-1234567 | info@nepalhospital.com</p>
+            <p class="mt-2">Follow us: 
+                <a href="#" class="text-blue-300 hover:underline" aria-label="Facebook">Facebook</a> | 
+                <a href="#" class="text-blue-300 hover:underline" aria-label="Twitter">Twitter</a>
+            </p>
+            <p class="mt-2">&copy; 2025 Nepal Hospital. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Language Switcher (Placeholder)
+        document.getElementById('language').addEventListener('change', function() {
+            const lang = this.value;
+            alert(`Switching to ${lang} (Placeholder functionality)`);
+            // Implement actual language switch logic here
+        });
+
+        // High Contrast Mode
+        document.getElementById('contrastToggle').addEventListener('click', function() {
+            document.body.classList.toggle('high-contrast');
+            this.textContent = document.body.classList.contains('high-contrast') ? 'Normal Mode' : 'High Contrast';
+        });
+
+        // Font Size Toggle
+        document.getElementById('fontSizeToggle').addEventListener('click', function() {
+            document.body.classList.toggle('large-text');
+            this.textContent = document.body.classList.contains('large-text') ? 'A-' : 'A+';
+        });
+
+        // Keyboard Navigation Support
+        document.querySelectorAll('a, button, input, select').forEach(element => {
+            element.addEventListener('focus', () => {
+                element.classList.add('outline', 'outline-blue-500');
+            });
+            element.addEventListener('blur', () => {
+                element.classList.remove('outline', 'outline-blue-500');
+            });
+        });
+    </script>
+</body>
+</html>
